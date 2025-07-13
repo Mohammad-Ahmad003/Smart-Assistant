@@ -1,3 +1,4 @@
+
 # 🧠 Smart Assistant for Research Summarization
 
 A modular AI-powered assistant that reads PDF or TXT documents, generates summaries, answers questions, and challenges users with logical reasoning tasks.
@@ -20,11 +21,24 @@ A modular AI-powered assistant that reads PDF or TXT documents, generates summar
    [secrets]
    OPENAI_API_KEY = "your-key-here"
    ```
+
 6. Run the app:
    ```
    streamlit run app.py
    ```
+📫 API Testing with Postman
+You can test the Smart Assistant APIs using the provided Postman collection.
+-> Download Collection
+File: postman/SmartAssistant.postman_collection.json
 
+-> How to Use
+Open Postman.
+
+Go to File > Import.
+
+Select the JSON file.
+
+Start testing the APIs locally or with the hosted Streamlit backend.
 ## ✅ Features
 
 - Upload and analyze PDF or TXT files
