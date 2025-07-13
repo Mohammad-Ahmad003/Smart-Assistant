@@ -134,6 +134,18 @@ if st.session_state.document_text:
                 st.markdown(f"- 🎯 **Feedback:**")
                 st.info(item['evaluation'])
                 st.markdown("---")
-
 else:
     st.info("👈 Upload a document from the sidebar to begin.")
+
+# ---------------------------
+# 📌 Footer (Credits Section)
+# ---------------------------
+st.markdown(
+    """
+    <hr style="margin-top: 30px; border: none; height: 1px; background-color: #ddd;" />
+    <div style="text-align: center; color: gray; font-size: 0.9em;">
+        🔧 A contribution by <b>Mohammad Ahmad</b> • <a href="https://github.com/Mohammad-Ahmad003" target="_blank">GitHub</a>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
