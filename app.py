@@ -4,9 +4,8 @@ from qa_module import answer_question
 from challenge_module import generate_challenge_questions, evaluate_answer
 import PyPDF2
 
-# --------------------
-# ⚙️ Session State Init
-# --------------------
+#  Session State Init
+
 if "document_text" not in st.session_state:
     st.session_state.document_text = ""
 
@@ -19,9 +18,9 @@ if "challenge_questions" not in st.session_state:
 if "qa_history" not in st.session_state:
     st.session_state.qa_history = []
 
-# -------------------
-# 📄 File Extraction
-# -------------------
+
+# File Extraction
+
 def extract_text(file):
     if file.type == "application/pdf":
         reader = PyPDF2.PdfReader(file)
@@ -30,15 +29,15 @@ def extract_text(file):
         return file.read().decode("utf-8")
     return ""
 
-# -------------------
-# 🎨 UI Configuration
-# -------------------
+
+# UI Configuration
+
 st.set_page_config(page_title="📄 Smart Assistant", layout="wide")
 st.title("📄 Smart Assistant for Research Summarization")
 
-# -------------------
-# 📁 Sidebar Upload
-# -------------------
+
+# Sidebar Upload
+
 with st.sidebar:
     st.header("📤 Upload Document")
     uploaded_file = st.file_uploader("PDF or TXT", type=["pdf", "txt"])
@@ -63,9 +62,7 @@ with st.sidebar:
     else:
         st.info("No memory yet.")
 
-# -------------------
 # 🧩 Main Functional Tabs
-# -------------------
 if st.session_state.document_text:
     tab1, tab2, tab3 = st.tabs(["📌 Summary", "💬 Ask Anything", "🎯 Challenge Me"])
 
@@ -134,6 +131,16 @@ if st.session_state.document_text:
                 st.markdown(f"- 🎯 **Feedback:**")
                 st.info(item['evaluation'])
                 st.markdown("---")
-
 else:
     st.info("👈 Upload a document from the sidebar to begin.")
+
+# credits
+st.markdown(
+    """
+    <hr style="margin-top: 30px; border: none; height: 1px; background-color: #ddd;" />
+    <div style="text-align: center; color: gray; font-size: 0.9em;">
+        🔧 A contribution by <b>Mohammad Ahmad</b> • <a href="https://github.com/Mohammad-Ahmad003" target="_blank">GitHub</a>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
