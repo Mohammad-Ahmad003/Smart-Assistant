@@ -45,3 +45,8 @@ Start testing the APIs locally or with the hosted Streamlit backend.
 - Auto summarize in ≤150 words
 - Ask Anything Q&A with justification
 - “Challenge Me” mode with 3 questions + feedback
+
+## 📎 Project Links
+- 🔗 Live App: [Smart Assistant](https://kn4qmtsxy8jfgsuceeda4p.streamlit.app/)
+- 📂 GitHub Repo: [Smart Assistant on GitHub](https://github.com/Mohammad-Ahmad003/Smart-Assistant)
+
