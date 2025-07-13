@@ -134,13 +134,6 @@ if st.session_state.document_text:
 else:
     st.info("👈 Upload a document from the sidebar to begin.")
 
-<<<<<<< HEAD
-# ---------------------------
-# 📌 Footer (Credits Section)
-# ---------------------------
-=======
-# credits
->>>>>>> 0e0921c5176354082f6401bcb1a4d51d824ede72
 st.markdown(
     """
     <hr style="margin-top: 30px; border: none; height: 1px; background-color: #ddd;" />
