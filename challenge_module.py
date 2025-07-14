@@ -1,10 +1,24 @@
 import streamlit as st
 import google.generativeai as genai
 
-genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-model = genai.GenerativeModel(model_name="models/gemini-1.5-flash-latest")
+# Load keys from Streamlit secrets
+API_KEYS = st.secrets["GEMINI_KEYS"]
 
+# Helper function to generate model response using fallback keys
+def get_model_response(prompt):
+    for key in API_KEYS:
+        try:
+            genai.configure(api_key=key)
+            model = genai.GenerativeModel(model_name="models/gemini-1.5-flash-latest")
+            response = model.generate_content(prompt)
+            return response.text.strip()
+        except Exception as e:
+            print(f"Key failed: {key[:6]}... | Reason: {str(e)}")
 
+            continue
+    return "❌ All API keys failed or quota exceeded. Please try again later."
+
+# Function to generate logical challenge questions
 def generate_challenge_questions(document_text):
     prompt = f"""
 You are a tutor AI. Read the following document and generate exactly 3 **logic-based** or **comprehension-focused** questions.
@@ -15,19 +29,17 @@ Each question should:
 - Be clearly numbered.
 
 Document:
-\"\"\"
-{document_text}
-\"\"\"
+\"\"\"{document_text}\"\"\"
 
 Give only the questions in this format:
 1. ...
 2. ...
 3. ...
 """
-    response = model.generate_content(prompt)
-    return [line.strip() for line in response.text.strip().split("\n") if line.strip().startswith(tuple("123"))]
+    response_text = get_model_response(prompt)
+    return [line.strip() for line in response_text.split("\n") if line.strip().startswith(tuple("123"))]
 
-
+# Function to evaluate the user's answers
 def evaluate_answer(document_text, question, user_answer):
     prompt = f"""
 You are an evaluator AI. A user is answering a question based on the following document.
@@ -61,5 +73,4 @@ Respond in this format:
 - ...
 - ...
 """
-    response = model.generate_content(prompt)
-    return response.text.strip()
+    return get_model_response(prompt)

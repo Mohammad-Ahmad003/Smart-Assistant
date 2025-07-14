@@ -3,24 +3,43 @@ from summarizer import generate_summary
 from qa_module import answer_question
 from challenge_module import generate_challenge_questions, evaluate_answer
 import PyPDF2
+import google.generativeai as genai
 
-#  Session State Init
-if "document_text" not in st.session_state:
-    st.session_state.document_text = ""
+# 1️⃣ Load API Keys from secrets
+keys = st.secrets["GEMINI_KEYS"]
 
-if "qa_memory" not in st.session_state:
-    st.session_state.qa_memory = []
+# 2️⃣ Utility to get valid response from available keys
+import google.generativeai as genai
+import streamlit as st
 
-if "challenge_questions" not in st.session_state:
-    st.session_state.challenge_questions = []
+keys = st.secrets["GEMINI_KEYS"]
 
-if "qa_history" not in st.session_state:
-    st.session_state.qa_history = []
+def get_valid_model(prompt):
+    for key in keys:
+        try:
+            genai.configure(api_key=key)
+            model = genai.GenerativeModel("gemini-1.5-flash")
+            response = model.generate_content(prompt)
+            return response.text.strip()
+        except Exception as e:
+            error_str = str(e)
+            if "quota" in error_str or "429" in error_str:
+                # Log in backend only
+                print(f"[Quota Warning] Key {key[:8]}... exhausted.")
+            else:
+                print(f"[Error] Key {key[:8]}... failed: {error_str}")
+            continue
+    # All keys failed
+    st.session_state.quota_exceeded = True
+    return "⚠️ All AI resources are temporarily unavailable. Please try again later."
 
-if "quota_exceeded" not in st.session_state:
-    st.session_state.quota_exceeded = False
 
-# -------------------- File Extraction --------------------
+# 3️⃣ Initialize Session State
+for key in ["document_text", "qa_memory", "challenge_questions", "qa_history", "quota_exceeded"]:
+    if key not in st.session_state:
+        st.session_state[key] = [] if "memory" in key or "questions" in key or "history" in key else False if key == "quota_exceeded" else ""
+
+# 4️⃣ Extract Text Utility
 def extract_text(file):
     if file.type == "application/pdf":
         reader = PyPDF2.PdfReader(file)
@@ -29,11 +48,10 @@ def extract_text(file):
         return file.read().decode("utf-8")
     return ""
 
-# -------------------- UI Configuration --------------------
+# 5️⃣ UI and Sidebar
 st.set_page_config(page_title="📄 Smart Assistant", layout="wide")
 st.title("📄 Smart Assistant for Research Summarization")
 
-# -------------------- Sidebar Upload --------------------
 with st.sidebar:
     st.header("📤 Upload Document")
     uploaded_file = st.file_uploader("PDF or TXT", type=["pdf", "txt"])
@@ -51,27 +69,23 @@ with st.sidebar:
                 if st.button(f"❌ Delete Q{i+1}", key=f"delete_{i}"):
                     st.session_state.qa_memory.pop(i)
                     st.experimental_rerun()
-
         if st.button("🧹 Clear All"):
             st.session_state.qa_memory.clear()
             st.rerun()
     else:
         st.info("No memory yet.")
 
-# -------------------- Main Functional Tabs --------------------
+# 6️⃣ Tabs and Functional Logic
 if st.session_state.document_text:
     tab1, tab2, tab3 = st.tabs(["📌 Summary", "💬 Ask Anything", "🎯 Challenge Me"])
 
-    # --- SUMMARY ---
     with tab1:
         st.subheader("📌 Document Summary")
         summary = generate_summary(st.session_state.document_text)
         st.success(summary)
         if "quota" in summary.lower():
             st.session_state.quota_exceeded = True
-            st.warning("⚠️ You may have exceeded your free API quota for today.")
 
-    # --- ASK ANYTHING ---
     with tab2:
         st.subheader("💬 Ask Anything Based on the Document")
         question = st.text_input("Enter your question:")
@@ -82,7 +96,6 @@ if st.session_state.document_text:
                 st.info(answer)
                 if "quota" in answer.lower():
                     st.session_state.quota_exceeded = True
-                    st.warning("🚫 API usage quota may be exceeded. Please try later.")
                 st.session_state.qa_memory.append({
                     "question": question,
                     "answer": answer
@@ -90,7 +103,6 @@ if st.session_state.document_text:
             else:
                 st.warning("Please ask something.")
 
-    # --- CHALLENGE ME ---
     with tab3:
         st.subheader("🎯 Challenge Me with Logical Questions")
         if not st.session_state.challenge_questions:
@@ -114,7 +126,6 @@ if st.session_state.document_text:
                         )
                         if "quota" in evaluation.lower():
                             st.session_state.quota_exceeded = True
-                            st.warning("⚠️ API quota may be exceeded. Try again later.")
                         st.session_state.qa_history.append({
                             "question": question,
                             "user_answer": answer,
@@ -139,7 +150,7 @@ if st.session_state.document_text:
 else:
     st.info("👈 Upload a document from the sidebar to begin.")
 
-# credits
+# 7️⃣ Credits
 st.markdown(
     """
     <hr style="margin-top: 30px; border: none; height: 1px; background-color: #ddd;" />
@@ -149,4 +160,3 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
