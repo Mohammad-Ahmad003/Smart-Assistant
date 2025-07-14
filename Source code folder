@@ -1,0 +1,9 @@
+Smart-Assistant/
+├── app.py
+├──.streamlit
+│    └──secrets
+├── challenge_module.py
+├── summarizer.py
+├── qa_module.py
+├── postman/
+│   └── SmartAssistant.postman_collection.json
