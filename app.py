@@ -166,13 +166,18 @@ from qa_module import answer_question
 from challenge_module import generate_challenge_questions, evaluate_answer
 import PyPDF2
 
-# 🌟 Session State Defaults
-for key in ["document_text", "qa_memory", "challenge_questions", "qa_history", "quota_exceeded"]:
+# 🌟 Initialize all required session state variables
+for key in [
+    "document_text", "qa_memory", "challenge_questions", "qa_history",
+    "quota_exceeded", "working_key", "failed_keys"
+]:
     if key not in st.session_state:
-        st.session_state[key] = (
-            [] if key in ["qa_memory", "challenge_questions", "qa_history"] else False if key == "quota_exceeded" else ""
-        )
-
+        if key in ["qa_memory", "challenge_questions", "qa_history", "failed_keys"]:
+            st.session_state[key] = []
+        elif key == "quota_exceeded":
+            st.session_state[key] = False
+        else:
+            st.session_state[key] = ""
 # 📄 Extract Text from PDF or TXT
 def extract_text(file):
     if file.type == "application/pdf":
