@@ -68,7 +68,7 @@ with st.sidebar:
                 st.write(f"**A:** {entry['answer']}")
                 if st.button(f"❌ Delete Q{i+1}", key=f"delete_{i}"):
                     st.session_state.qa_memory.pop(i)
-                    st.experimental_rerun()
+                    st.rerun()
         if st.button("🧹 Clear All"):
             st.session_state.qa_memory.clear()
             st.rerun()
