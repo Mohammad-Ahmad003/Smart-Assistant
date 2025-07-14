@@ -4,6 +4,7 @@ from qa_module import answer_question
 from challenge_module import generate_challenge_questions, evaluate_answer
 import PyPDF2
 import google.generativeai as genai
+from utils.gemini_fallback import get_valid_response
 
 # 1️⃣ Load API Keys from secrets
 keys = st.secrets["GEMINI_KEYS"]

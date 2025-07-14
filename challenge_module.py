@@ -1,22 +1,9 @@
 import streamlit as st
 import google.generativeai as genai
+from utils.gemini_fallback import get_valid_response
 
 # Load keys from Streamlit secrets
 API_KEYS = st.secrets["GEMINI_KEYS"]
-
-# Helper function to generate model response using fallback keys
-def get_model_response(prompt):
-    for key in API_KEYS:
-        try:
-            genai.configure(api_key=key)
-            model = genai.GenerativeModel(model_name="models/gemini-1.5-flash-latest")
-            response = model.generate_content(prompt)
-            return response.text.strip()
-        except Exception as e:
-            print(f"Key failed: {key[:6]}... | Reason: {str(e)}")
-
-            continue
-    return "❌ All API keys failed or quota exceeded. Please try again later."
 
 # Function to generate logical challenge questions
 def generate_challenge_questions(document_text):
@@ -36,7 +23,7 @@ Give only the questions in this format:
 2. ...
 3. ...
 """
-    response_text = get_model_response(prompt)
+    response_text = get_valid_response(prompt)
     return [line.strip() for line in response_text.split("\n") if line.strip().startswith(tuple("123"))]
 
 # Function to evaluate the user's answers
@@ -73,4 +60,4 @@ Respond in this format:
 - ...
 - ...
 """
-    return get_model_response(prompt)
+    return get_valid_response(prompt)
