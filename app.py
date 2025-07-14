@@ -1,48 +1,179 @@
+# import streamlit as st
+# from summarizer import generate_summary
+# from qa_module import answer_question
+# from challenge_module import generate_challenge_questions, evaluate_answer
+# import PyPDF2
+# import google.generativeai as genai
+# # 1️⃣ Load API Keys from secrets
+# keys = st.secrets["GEMINI_KEYS"]
+#
+# # 2️⃣ Utility to get valid response from available keys
+#
+#
+#
+#
+#
+# # def get_valid_model(prompt):
+# #     for key in keys:
+# #         try:
+# #             genai.configure(api_key=key)
+# #             model = genai.GenerativeModel("gemini-1.5-flash")
+# #             response = model.generate_content(prompt)
+# #             return response.text.strip()
+# #         except Exception as e:
+# #             error_str = str(e)
+# #             if "quota" in error_str or "429" in error_str:
+# #                 # Log in backend only
+# #                 print(f"[Quota Warning] Key {key[:8]}... exhausted.")
+# #             else:
+# #                 print(f"[Error] Key {key[:8]}... failed: {error_str}")
+# #             continue
+# #     # All keys failed
+# #     st.session_state.quota_exceeded = True
+# #     return "⚠️ All AI resources are temporarily unavailable. Please try again later."
+#
+#
+# # 3️⃣ Initialize Session State
+# for key in ["document_text", "qa_memory", "challenge_questions", "qa_history", "quota_exceeded"]:
+#     if key not in st.session_state:
+#         st.session_state[key] = [] if "memory" in key or "questions" in key or "history" in key else False if key == "quota_exceeded" else ""
+#
+# # 4️⃣ Extract Text Utility
+# def extract_text(file):
+#     if file.type == "application/pdf":
+#         reader = PyPDF2.PdfReader(file)
+#         return "\n".join([page.extract_text() or "" for page in reader.pages])
+#     elif file.type == "text/plain":
+#         return file.read().decode("utf-8")
+#     return ""
+#
+# # 5️⃣ UI and Sidebar
+# st.set_page_config(page_title="📄 Smart Assistant", layout="wide")
+# st.title("📄 Smart Assistant for Research Summarization")
+#
+# with st.sidebar:
+#     st.header("📤 Upload Document")
+#     uploaded_file = st.file_uploader("PDF or TXT", type=["pdf", "txt"])
+#     if uploaded_file:
+#         st.session_state.document_text = extract_text(uploaded_file)
+#         st.success("✅ Document Loaded")
+#
+#     st.markdown("---")
+#     st.subheader("💾 Ask Anything Memory")
+#     if st.session_state.qa_memory:
+#         for i, entry in enumerate(st.session_state.qa_memory):
+#             with st.expander(f"Q{i+1}: {entry['question'][:40]}..."):
+#                 st.write(f"**Q:** {entry['question']}")
+#                 st.write(f"**A:** {entry['answer']}")
+#                 if st.button(f"❌ Delete Q{i+1}", key=f"delete_{i}"):
+#                     st.session_state.qa_memory.pop(i)
+#                     st.rerun()
+#         if st.button("🧹 Clear All"):
+#             st.session_state.qa_memory.clear()
+#             st.rerun()
+#     else:
+#         st.info("No memory yet.")
+#
+# # 6️⃣ Tabs and Functional Logic
+# if st.session_state.document_text:
+#     tab1, tab2, tab3 = st.tabs(["📌 Summary", "💬 Ask Anything", "🎯 Challenge Me"])
+#
+#     with tab1:
+#         st.subheader("📌 Document Summary")
+#         summary = generate_summary(st.session_state.document_text)
+#         st.success(summary)
+#         if "quota" in summary.lower():
+#             st.session_state.quota_exceeded = True
+#
+#     with tab2:
+#         st.subheader("💬 Ask Anything Based on the Document")
+#         question = st.text_input("Enter your question:")
+#         if st.button("🧠 Get Answer", disabled=st.session_state.quota_exceeded):
+#             if question.strip():
+#                 answer = answer_question(st.session_state.document_text, question)
+#                 st.markdown("**📘 Answer:**")
+#                 st.info(answer)
+#                 if "quota" in answer.lower():
+#                     st.session_state.quota_exceeded = True
+#                 st.session_state.qa_memory.append({
+#                     "question": question,
+#                     "answer": answer
+#                 })
+#             else:
+#                 st.warning("Please ask something.")
+#
+#     with tab3:
+#         st.subheader("🎯 Challenge Me with Logical Questions")
+#         if not st.session_state.challenge_questions:
+#             if st.button("🔄 Generate Questions", disabled=st.session_state.quota_exceeded):
+#                 st.session_state.challenge_questions = generate_challenge_questions(
+#                     st.session_state.document_text
+#                 )
+#
+#         if st.session_state.challenge_questions:
+#             for i, question in enumerate(st.session_state.challenge_questions):
+#                 st.markdown(f"**Q{i + 1}:** {question}")
+#                 st.text_input("Your Answer:", key=f"user_answer_{i}")
+#
+#             if st.button("✅ Evaluate My Answers", disabled=st.session_state.quota_exceeded):
+#                 st.session_state.qa_history = []
+#                 for i, question in enumerate(st.session_state.challenge_questions):
+#                     answer = st.session_state.get(f"user_answer_{i}", "")
+#                     if answer.strip():
+#                         evaluation = evaluate_answer(
+#                             st.session_state.document_text, question, answer
+#                         )
+#                         if "quota" in evaluation.lower():
+#                             st.session_state.quota_exceeded = True
+#                         st.session_state.qa_history.append({
+#                             "question": question,
+#                             "user_answer": answer,
+#                             "evaluation": evaluation
+#                         })
+#                     else:
+#                         st.session_state.qa_history.append({
+#                             "question": question,
+#                             "user_answer": "(No answer)",
+#                             "evaluation": "❌ No answer given."
+#                         })
+#                 st.rerun()
+#
+#         if st.session_state.qa_history:
+#             st.markdown("### 📊 Results")
+#             for i, item in enumerate(st.session_state.qa_history, 1):
+#                 st.markdown(f"**Q{i}:** {item['question']}")
+#                 st.markdown(f"- 📝 Your Answer: `{item['user_answer']}`")
+#                 st.markdown(f"- 🎯 **Feedback:**")
+#                 st.info(item['evaluation'])
+#                 st.markdown("---")
+# else:
+#     st.info("👈 Upload a document from the sidebar to begin.")
+#
+# # 7️⃣ Credits
+# st.markdown(
+#     """
+#     <hr style="margin-top: 30px; border: none; height: 1px; background-color: #ddd;" />
+#     <div style="text-align: center; color: gray; font-size: 0.9em;">
+#         🔧 A contribution by <b>Mohammad Ahmad</b> • <a href="https://github.com/Mohammad-Ahmad003" target="_blank">GitHub</a>
+#     </div>
+#     """,
+#     unsafe_allow_html=True
+# )
+
 import streamlit as st
 from summarizer import generate_summary
 from qa_module import answer_question
 from challenge_module import generate_challenge_questions, evaluate_answer
 import PyPDF2
-import google.generativeai as genai
-from utils.gemini_fallback import get_valid_response
 
-# 1️⃣ Load API Keys from secrets
-keys = st.secrets["GEMINI_KEYS"]
-
-# 2️⃣ Utility to get valid response from available keys
-import google.generativeai as genai
-import streamlit as st
-
-keys = st.secrets["GEMINI_KEYS"]
-if "working_key" not in st.session_state:
-    st.session_state.working_key = None
-
-def get_valid_model(prompt):
-    for key in keys:
-        try:
-            genai.configure(api_key=key)
-            model = genai.GenerativeModel("gemini-1.5-flash")
-            response = model.generate_content(prompt)
-            return response.text.strip()
-        except Exception as e:
-            error_str = str(e)
-            if "quota" in error_str or "429" in error_str:
-                # Log in backend only
-                print(f"[Quota Warning] Key {key[:8]}... exhausted.")
-            else:
-                print(f"[Error] Key {key[:8]}... failed: {error_str}")
-            continue
-    # All keys failed
-    st.session_state.quota_exceeded = True
-    return "⚠️ All AI resources are temporarily unavailable. Please try again later."
-
-
-# 3️⃣ Initialize Session State
+# 🌟 Session State Defaults
 for key in ["document_text", "qa_memory", "challenge_questions", "qa_history", "quota_exceeded"]:
     if key not in st.session_state:
-        st.session_state[key] = [] if "memory" in key or "questions" in key or "history" in key else False if key == "quota_exceeded" else ""
+        st.session_state[key] = (
+            [] if key in ["qa_memory", "challenge_questions", "qa_history"] else False if key == "quota_exceeded" else ""
+        )
 
-# 4️⃣ Extract Text Utility
+# 📄 Extract Text from PDF or TXT
 def extract_text(file):
     if file.type == "application/pdf":
         reader = PyPDF2.PdfReader(file)
@@ -51,10 +182,11 @@ def extract_text(file):
         return file.read().decode("utf-8")
     return ""
 
-# 5️⃣ UI and Sidebar
+# 🧠 App Config & Title
 st.set_page_config(page_title="📄 Smart Assistant", layout="wide")
 st.title("📄 Smart Assistant for Research Summarization")
 
+# 📥 Sidebar: Upload + Memory
 with st.sidebar:
     st.header("📤 Upload Document")
     uploaded_file = st.file_uploader("PDF or TXT", type=["pdf", "txt"])
@@ -64,6 +196,7 @@ with st.sidebar:
 
     st.markdown("---")
     st.subheader("💾 Ask Anything Memory")
+
     if st.session_state.qa_memory:
         for i, entry in enumerate(st.session_state.qa_memory):
             with st.expander(f"Q{i+1}: {entry['question'][:40]}..."):
@@ -78,10 +211,11 @@ with st.sidebar:
     else:
         st.info("No memory yet.")
 
-# 6️⃣ Tabs and Functional Logic
+# 🧩 Main Tabs
 if st.session_state.document_text:
     tab1, tab2, tab3 = st.tabs(["📌 Summary", "💬 Ask Anything", "🎯 Challenge Me"])
 
+    # 📌 Summary Tab
     with tab1:
         st.subheader("📌 Document Summary")
         summary = generate_summary(st.session_state.document_text)
@@ -89,6 +223,7 @@ if st.session_state.document_text:
         if "quota" in summary.lower():
             st.session_state.quota_exceeded = True
 
+    # 💬 Q&A Tab
     with tab2:
         st.subheader("💬 Ask Anything Based on the Document")
         question = st.text_input("Enter your question:")
@@ -106,8 +241,10 @@ if st.session_state.document_text:
             else:
                 st.warning("Please ask something.")
 
+    # 🎯 Challenge Tab
     with tab3:
         st.subheader("🎯 Challenge Me with Logical Questions")
+
         if not st.session_state.challenge_questions:
             if st.button("🔄 Generate Questions", disabled=st.session_state.quota_exceeded):
                 st.session_state.challenge_questions = generate_challenge_questions(
@@ -153,7 +290,7 @@ if st.session_state.document_text:
 else:
     st.info("👈 Upload a document from the sidebar to begin.")
 
-# 7️⃣ Credits
+# 🙏 Footer
 st.markdown(
     """
     <hr style="margin-top: 30px; border: none; height: 1px; background-color: #ddd;" />

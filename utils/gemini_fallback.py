@@ -6,6 +6,8 @@ API_KEYS = st.secrets["GEMINI_KEYS"]
 
 if "working_key" not in st.session_state:
     st.session_state.working_key = None
+if "working_key" not in st.session_state:
+    st.session_state.working_key = None
 if "failed_keys" not in st.session_state:
     st.session_state.failed_keys = set()
 
