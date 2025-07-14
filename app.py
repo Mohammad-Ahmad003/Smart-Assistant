@@ -20,6 +20,23 @@ if "qa_history" not in st.session_state:
 if "quota_exceeded" not in st.session_state:
     st.session_state.quota_exceeded = False
 
+import google.generativeai as genai
+import streamlit as st
+
+keys = st.secrets["GEMINI_KEYS"]
+# Api key checks
+def get_valid_model(prompt):
+    for key in keys:
+        try:
+            genai.configure(api_key=key)
+            model = genai.GenerativeModel("gemini-1.5-flash")
+            response = model.generate_content(prompt)
+            return response.text  # or .candidates[0].text depending on version
+        except Exception as e:
+            st.warning(f"Key failed: {key[:6]}... | Reason: {str(e)}")
+            continue
+    return "❌ All API keys failed. Please try again later."
+
 # -------------------- File Extraction --------------------
 def extract_text(file):
     if file.type == "application/pdf":
