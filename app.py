@@ -14,6 +14,8 @@ import google.generativeai as genai
 import streamlit as st
 
 keys = st.secrets["GEMINI_KEYS"]
+if "working_key" not in st.session_state:
+    st.session_state.working_key = None
 
 def get_valid_model(prompt):
     for key in keys:
