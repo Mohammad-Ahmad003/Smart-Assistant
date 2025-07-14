@@ -1,0 +1,40 @@
+# -------------- Python --------------
+__pycache__
+.py[cod]
+.pyo
+.pyd
+.egg
+.egg-info
+dist
+build
+
+# -------------- Virtual Environment --------------
+venv
+.venv
+env
+ENV
+
+# -------------- IDE Specific --------------
+.vscode
+.idea
+.sublime-project
+.sublime-workspace
+
+# -------------- OS Files --------------
+.DS_Store
+Thumbs.db
+
+# -------------- Secrets & API Keys --------------
+.secrets.toml
+.env
+
+# -------------- Logs and Temporary Files --------------
+.log
+.tmp
+.bak
+
+# -------------- Streamlit Cache (optional) --------------
+.streamlit
+
+# -------------- Jupyter (if any) --------------
+.ipynb_checkpoints
